@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Inventario{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Inventario</h2>
+    <div>
+        <a href="{% url 'inventario:movimientos' %}" class="btn btn-outline-secondary">Ver movimientos</a>
+        <a href="{% url 'inventario:crear_movimiento' %}" class="btn btn-success">+ Registrar movimiento</a>
+    </div>
+</div>
+<table class="table table-striped bg-white">
+    <thead><tr><th>Producto</th><th>Stock actual</th><th>Stock mínimo</th><th>Estado</th><th>Última actualización</th></tr></thead>
+    <tbody>
+    {% for inv in inventarios %}
+        <tr>
+            <td>{{ inv.producto.nombre }}</td>
+            <td>{{ inv.stock_actual }}</td>
+            <td>{{ inv.producto.stock_minimo }}</td>
+            <td>
+                {% if inv.estado_stock == 'AGOTADO' %}
+                <span class="badge bg-danger">Agotado</span>
+                {% elif inv.estado_stock == 'BAJO' %}
+                <span class="badge bg-warning text-dark">Stock bajo</span>
+                {% else %}
+                <span class="badge bg-success">OK</span>
+                {% endif %}
+            </td>
+            <td>{{ inv.fecha_actualizacion|date:"d/m/Y H:i" }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-center">No hay productos en inventario.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

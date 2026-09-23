@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Pedido{% endblock %}
+{% block content %}
+<h2>{% if object %}Editar{% else %}Nuevo{% endif %} pedido</h2>
+<form method="post" class="bg-white p-4 rounded shadow-sm">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h5 class="mt-4">Productos del pedido</h5>
+    {{ formset.management_form }}
+    <table class="table" id="detalle-table">
+        <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio unitario</th><th>Quitar</th></tr></thead>
+        <tbody>
+        {% for detalle_form in formset %}
+            <tr class="detalle-row">
+                {% for hidden in detalle_form.hidden_fields %}{{ hidden }}{% endfor %}
+                <td>{{ detalle_form.producto }}</td>
+                <td>{{ detalle_form.cantidad }}</td>
+                <td>{{ detalle_form.precio_unitario }}</td>
+                <td>{% if detalle_form.DELETE %}{{ detalle_form.DELETE }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <button type="button" id="add-row" class="btn btn-sm btn-outline-secondary mb-3">+ Agregar producto</button>
+    <br>
+    <button type="submit" class="btn btn-success">Guardar pedido</button>
+    <a href="{% url 'pedidos:lista' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+<template id="empty-form-template">
+    <tr class="detalle-row">
+        <td>{{ formset.empty_form.producto }}</td>
+        <td>{{ formset.empty_form.cantidad }}</td>
+        <td>{{ formset.empty_form.precio_unitario }}</td>
+        <td></td>
+    </tr>
+</template>
+
+<script>
+document.getElementById('add-row').addEventListener('click', function () {
+    const totalForms = document.getElementById('id_detalles-TOTAL_FORMS');
+    const index = parseInt(totalForms.value);
+    const template = document.getElementById('empty-form-template').innerHTML.replace(/__prefix__/g, index);
+    document.querySelector('#detalle-table tbody').insertAdjacentHTML('beforeend', template);
+    totalForms.value = index + 1;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Nueva categoría{% endblock %}
+{% block content %}
+<h2>Nueva categoría</h2>
+<form method="post" class="bg-white p-4 rounded shadow-sm">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{% url 'productos:categorias' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

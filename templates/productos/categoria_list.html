@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Categorías{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Categorías</h2>
+    <a href="{% url 'productos:crear_categoria' %}" class="btn btn-success">+ Nueva categoría</a>
+</div>
+<table class="table table-striped bg-white">
+    <thead><tr><th>Nombre</th><th>Descripción</th><th>Activa</th></tr></thead>
+    <tbody>
+    {% for cat in categorias %}
+        <tr>
+            <td>{{ cat.nombre }}</td>
+            <td>{{ cat.descripcion|default:"—" }}</td>
+            <td>{% if cat.activo %}✅{% else %}❌{% endif %}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="3" class="text-center">No hay categorías registradas.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

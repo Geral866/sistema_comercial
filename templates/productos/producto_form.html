@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Producto{% endblock %}
+{% block content %}
+<h2>{% if object %}Editar{% else %}Nuevo{% endif %} producto</h2>
+<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{% url 'productos:lista' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

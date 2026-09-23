@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Registrar Nueva Venta</h2>
+
+    <form method="post" id="venta-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% if form.errors %}
+            <div class="alert alert-danger">{{ form.errors }}</div>
+        {% endif %}
+
+        {{ formset.management_form }}
+
+        {% if formset.non_form_errors %}
+            <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+        {% endif %}
+
+        <div class="card mb-4 p-3 shadow-sm">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Pedido (Opcional)</label>
+                    {{ form.pedido }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Cliente</label>
+                    {{ form.cliente }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Método de Pago</label>
+                    {{ form.metodo_pago }}
+                </div>
+            </div>
+        </div>
+
+        {{ productos_precios|json_script:"precios-data" }}
+        <h4 class="mb-3">Productos</h4>
+
+        <table class="table table-bordered align-middle" id="detalle-table">
+            <thead class="table-light">
+                <tr><th>Producto</th><th style="width:150px;">Cantidad</th><th style="width:200px;">Precio unitario</th></tr>
+            </thead>
+            <tbody>
+                {% for form_detalle in formset %}
+                <tr class="formset-row">
+                    {% for hidden in form_detalle.hidden_fields %}{{ hidden }}{% endfor %}
+                    
+                    {% if form_detalle.non_field_errors %}
+                        <td colspan="3"><div class="alert alert-danger py-1 px-2 mb-1">{{ form_detalle.non_field_errors }}</div></td>
+                    </tr>
+                    <tr>
+                    {% endif %}
+
+                    <td>
+                        {{ form_detalle.producto }}
+                        {% if form_detalle.producto.errors %}<div class="text-danger small">{{ form_detalle.producto.errors }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {{ form_detalle.cantidad }}
+                        {% if form_detalle.cantidad.errors %}<div class="text-danger small">{{ form_detalle.cantidad.errors }}</div>{% endif %}
+                    </td>
+                    <td>
+                        <span class="precio-visual fw-bold">$0</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Guardar Venta</button>
+            <a href="{% url 'ventas:lista' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+const preciosProductos = JSON.parse(document.getElementById('precios-data').textContent);
+
+function actualizarPrecioVisual(select) {
+    const fila = select.closest('tr');
+    if (!fila) return;
+    const span = fila.querySelector('.precio-visual');
+    const precio = preciosProductos[select.value];
+    if (span) {
+        span.textContent = precio !== undefined ? '$' + precio : '$0';
+    }
+}
+
+document.addEventListener('change', function (e) {
+    if (e.target.matches('select[name$="-producto"]')) {
+        actualizarPrecioVisual(e.target);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('select[name$="-producto"]').forEach(function (select) {
+        if (select.value) actualizarPrecioVisual(select);
+    });
+});
+</script>
+{% endblock %}

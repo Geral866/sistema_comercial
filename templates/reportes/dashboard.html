@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-success shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">Ventas de hoy</h6>
+                <h3>${{ total_ventas_hoy }}</h3>
+                <small>{{ cantidad_ventas_hoy }} venta(s)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-primary shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">Ventas del mes</h6>
+                <h3>${{ total_ventas_mes }}</h3>
+                <small>{{ cantidad_ventas_mes }} venta(s)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">Clientes registrados</h6>
+                <h3>{{ total_clientes }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">Productos activos</h6>
+                <h3>{{ total_productos }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">Productos más vendidos</div>
+            <ul class="list-group list-group-flush">
+                {% for p in top_productos %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ p.nombre }} <span class="badge bg-success">{{ p.total_vendido }} unid.</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-center">Aún no hay ventas registradas.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">⚠️ Alertas de inventario</div>
+            <ul class="list-group list-group-flush">
+                {% for inv in alertas_stock %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ inv.producto.nombre }}
+                        {% if inv.estado_stock == 'AGOTADO' %}
+                            <span class="badge bg-danger">Agotado</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Stock bajo ({{ inv.stock_actual }})</span>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-center">Todo el inventario está en niveles normales ✅</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
