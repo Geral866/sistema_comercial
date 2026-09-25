@@ -1,0 +1,51 @@
+{% extends 'base_publica.html' %}
+{% block title %}Finalizar compra{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5 order-md-2 mb-4">
+        <h5>Resumen de tu pedido</h5>
+        <ul class="list-group mb-3">
+        {% for item in items %}
+            <li class="list-group-item d-flex justify-content-between">
+                {{ item.cantidad }} x {{ item.producto.nombre }}
+                <span>${{ item.subtotal }}</span>
+            </li>
+        {% endfor %}
+            <li class="list-group-item d-flex justify-content-between fw-bold">
+                Total <span>${{ total }}</span>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-7 order-md-1">
+        <h5>Datos de envío</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Nombre completo *</label>
+                <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Número de cédula *</label>
+                <input type="text" name="documento" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Teléfono / WhatsApp *</label>
+                <input type="text" name="telefono" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Ciudad *</label>
+                <input type="text" name="ciudad" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Dirección de entrega *</label>
+                <input type="text" name="direccion" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Notas adicionales (opcional)</label>
+                <textarea name="notas" class="form-control" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success btn-lg w-100">Confirmar pedido</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -17,7 +17,7 @@ urlpatterns = [
     path('', RedirectView.as_view(pattern_name='productos:lista'), name='home'),
     path('inventario/', include('inventario.urls')),
     path('reportes/', include('reportes.urls')),
-    path('', RedirectView.as_view(pattern_name='reportes:dashboard'), name='home'),
+    path('', include('tienda.urls')),
     # más adelante: clientes, pedidos, ventas, reportes
 ]
 

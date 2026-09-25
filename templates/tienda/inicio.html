@@ -1,0 +1,33 @@
+{% extends 'base_publica.html' %}
+{% block content %}
+<div class="p-5 mb-4 bg-success bg-opacity-10 rounded-3 text-center">
+    <h1>Bienestar natural para tu día a día</h1>
+    <p class="lead">Suplementos y productos naturales para sueño, belleza, energía y más.</p>
+    <a href="{% url 'tienda:catalogo' %}" class="btn btn-success btn-lg">Ver catálogo completo</a>
+</div>
+
+<h3 class="mb-3">Categorías</h3>
+<div class="row mb-4">
+    {% for cat in categorias %}
+        <div class="col-md-3 mb-2">
+            <a href="{% url 'tienda:catalogo' %}?categoria={{ cat.id }}" class="btn btn-outline-success w-100">{{ cat.nombre }}</a>
+        </div>
+    {% endfor %}
+</div>
+
+<h3 class="mb-3">Productos destacados</h3>
+<div class="row">
+    {% for p in productos_destacados %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ p.nombre }}</h5>
+                    <p class="text-muted small">{{ p.categoria.nombre }}</p>
+                    <p class="fw-bold">${{ p.precio }}</p>
+                    <a href="{% url 'tienda:detalle_producto' p.pk %}" class="btn btn-success btn-sm">Ver producto</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base_publica.html' %}
+{% block title %}Pedido confirmado{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h2 class="text-success mb-3">✅ ¡Tu pedido #{{ pedido.id }} fue registrado!</h2>
+    <p class="lead">Para coordinar el pago y el envío, confirma tu pedido por WhatsApp:</p>
+    <a href="{{ link_whatsapp }}" target="_blank" class="btn btn-success btn-lg">
+        💬 Confirmar por WhatsApp
+    </a>
+    <p class="mt-4"><a href="{% url 'tienda:catalogo' %}">Seguir comprando</a></p>
+</div>
+{% endblock %}

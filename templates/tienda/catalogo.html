@@ -1,0 +1,33 @@
+{% extends 'base_publica.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <h5>Categorías</h5>
+        <div class="list-group mb-4">
+            <a href="{% url 'tienda:catalogo' %}" class="list-group-item list-group-item-action {% if not categoria_activa %}active{% endif %}">Todas</a>
+            {% for cat in categorias %}
+                <a href="{% url 'tienda:catalogo' %}?categoria={{ cat.id }}" class="list-group-item list-group-item-action {% if categoria_activa == cat.id %}active{% endif %}">{{ cat.nombre }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-9">
+        <h3 class="mb-3">Catálogo</h3>
+        <div class="row">
+        {% for p in productos %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ p.nombre }}</h5>
+                        <p class="text-muted small">{{ p.categoria.nombre }}</p>
+                        <p class="fw-bold">${{ p.precio }}</p>
+                        <a href="{% url 'tienda:detalle_producto' p.pk %}" class="btn btn-success btn-sm">Ver producto</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center">No hay productos en esta categoría.</p>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
