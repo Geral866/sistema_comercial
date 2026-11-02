@@ -1,12 +1,14 @@
 {% extends 'base_publica.html' %}
 {% block title %}Pedido confirmado{% endblock %}
 {% block content %}
-<div class="text-center py-5">
-    <h2 class="text-success mb-3">✅ ¡Tu pedido #{{ pedido.id }} fue registrado!</h2>
-    <p class="lead">Para coordinar el pago y el envío, confirma tu pedido por WhatsApp:</p>
-    <a href="{{ link_whatsapp }}" target="_blank" class="btn btn-success btn-lg">
+<div class="max-w-lg mx-auto text-center bg-white rounded-2xl shadow-soft p-10">
+    <div class="w-16 h-16 mx-auto rounded-full bg-mint flex items-center justify-center text-3xl mb-4">✅</div>
+    <h2 class="font-serif text-2xl font-bold text-primary mb-2">¡Tu pedido #{{ pedido.id }} fue registrado!</h2>
+    <p class="text-ink-muted mb-6">Para coordinar el pago y el envío, confirma tu pedido por WhatsApp.</p>
+    <a href="{{ link_whatsapp }}" target="_blank" class="inline-block bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold px-8 py-3.5 rounded-full">
         💬 Confirmar por WhatsApp
     </a>
-    <p class="mt-4"><a href="{% url 'tienda:catalogo' %}">Seguir comprando</a></p>
+    <p class="mt-6 text-sm"><a href="{% url 'tienda:catalogo' %}" class="text-secondary underline">Seguir comprando</a></p>
 </div>
 {% endblock %}
+

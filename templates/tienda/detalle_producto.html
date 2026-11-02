@@ -1,26 +1,19 @@
 {% extends 'base_publica.html' %}
 {% block content %}
-<div class="row">
-    <div class="col-md-6">
-        {% if producto.imagen %}
-            <img src="{{ producto.imagen.url }}" class="img-fluid rounded shadow-sm">
-        {% else %}
-            <div class="bg-light border rounded p-5 text-center text-muted">Sin imagen</div>
-        {% endif %}
+<div class="grid md:grid-cols-2 gap-8">
+    <div class="bg-mint-light rounded-2xl flex items-center justify-center p-6" style="height:380px;">
+        {% if producto.imagen %}<img src="{{ producto.imagen.url }}" class="max-h-full max-w-full object-contain">{% else %}<span class="text-6xl">🌿</span>{% endif %}
     </div>
-    <div class="col-md-6">
-        <h2>{{ producto.nombre }}</h2>
-        <p class="text-muted">{{ producto.categoria.nombre }}</p>
-        <h3 class="text-success">${{ producto.precio }}</h3>
-        <p>{{ producto.descripcion|default:"Sin descripción disponible." }}</p>
-        <form method="post" action="{% url 'tienda:agregar_carrito' producto.pk %}">
-            {% csrf_token %}
-            <div class="mb-3" style="max-width: 150px;">
-                <label class="form-label">Cantidad</label>
-                <input type="number" name="cantidad" value="1" min="1" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-success btn-lg">Agregar al carrito 🛒</button>
-        </form>
+    <div>
+        <span class="text-sm text-secondary font-semibold">{{ producto.categoria.nombre }}</span>
+        <h1 class="font-serif text-3xl font-bold text-primary mt-1">{{ producto.nombre }}</h1>
+        <p class="text-2xl font-bold text-accent-dark mt-2">${{ producto.precio }}</p>
+        <p class="text-ink-muted mt-4">{{ producto.descripcion|default:"Sin descripción disponible." }}</p>
+        <div class="flex items-center gap-3 mt-6">
+            <input type="number" id="cantidad" value="1" min="1" class="w-20 border border-surface-container rounded-lg px-3 py-2 text-center">
+            <button onclick="agregarAlCarrito({{ producto.pk }}, document.getElementById('cantidad').value)" class="bg-accent hover:bg-accent-dark text-white font-bold px-6 py-3 rounded-full">Agregar al carrito 🛒</button>
+        </div>
     </div>
 </div>
 {% endblock %}
+

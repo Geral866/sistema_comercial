@@ -1,0 +1,31 @@
+{% if items %}
+<table class="table bg-white">
+    <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+    <tbody>
+    {% for item in items %}
+        <tr>
+            <td>{{ item.nombre }}</td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-natural" data-accion="decrementar" data-pk="{{ item.id }}">-</button>
+                    <span>{{ item.cantidad }}</span>
+                    <button class="btn btn-sm btn-outline-natural" data-accion="incrementar" data-pk="{{ item.id }}">+</button>
+                </div>
+            </td>
+            <td>${{ item.precio }}</td>
+            <td>${{ item.subtotal }}</td>
+            <td><button class="btn btn-sm btn-outline-danger" data-accion="eliminar" data-pk="{{ item.id }}">Quitar</button></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+<div class="d-flex justify-content-between align-items-center">
+    <h4>Total: ${{ total }}</h4>
+    <a href="{% url 'tienda:checkout' %}" class="btn btn-honey btn-lg">Continuar con la compra →</a>
+</div>
+{% else %}
+<p class="text-center">Tu carrito está vacío.</p>
+<div class="text-center"><a href="{% url 'tienda:catalogo' %}" class="btn btn-honey">Ver catálogo</a></div>
+{% endif %}
+

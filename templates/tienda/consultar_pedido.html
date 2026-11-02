@@ -1,0 +1,49 @@
+{% extends 'base_publica.html' %}
+{% block title %}Mi pedido{% endblock %}
+{% block content %}
+<h2 class="font-serif text-3xl font-bold text-primary mb-2">Consulta el estado de tu pedido</h2>
+<p class="text-ink-muted mb-6">Ingresa el celular y la cédula que usaste al comprar. Los pedimos ambos para proteger tu información.</p>
+
+<form method="get" class="grid sm:grid-cols-3 gap-2 max-w-2xl mb-8">
+    <label class="sr-only" for="telefono">Celular</label>
+    <input id="telefono" type="tel" name="telefono" value="{{ telefono }}" placeholder="Celular" required
+           class="border border-surface-container rounded-full px-5 py-2.5 focus:border-accent outline-none">
+    <label class="sr-only" for="documento">Cédula</label>
+    <input id="documento" type="text" name="documento" value="{{ documento }}" placeholder="Cédula" required inputmode="numeric"
+           class="border border-surface-container rounded-full px-5 py-2.5 focus:border-accent outline-none">
+    <button type="submit" class="bg-primary hover:bg-secondary text-white font-semibold px-6 py-2.5 rounded-full">Buscar</button>
+</form>
+
+{% if pedidos is not None %}
+    {% if pedidos %}
+        <div class="space-y-4">
+        {% for pedido in pedidos %}
+            <div class="bg-white rounded-2xl shadow-soft p-5">
+                <div class="flex justify-between items-center mb-1">
+                    <h5 class="font-serif font-bold text-lg text-primary">Pedido #{{ pedido.id }}</h5>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full
+                        {% if pedido.estado == 'PENDIENTE' %}bg-amber-100 text-amber-800
+                        {% elif pedido.estado == 'CONFIRMADO' %}bg-sky-100 text-sky-800
+                        {% elif pedido.estado == 'COMPLETADO' %}bg-green-100 text-green-800
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ pedido.get_estado_display }}
+                    </span>
+                </div>
+                <p class="text-xs text-ink-muted mb-3">{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</p>
+                <ul class="text-sm space-y-1 mb-3">
+                    {% for detalle in pedido.detalles.all %}
+                        <li>{{ detalle.cantidad }} x {{ detalle.producto.nombre }}</li>
+                    {% endfor %}
+                </ul>
+                <p class="font-bold text-primary">Total: ${{ pedido.total|floatformat:0 }}</p>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-ink-muted py-10">No encontramos pedidos con esos datos.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+
+

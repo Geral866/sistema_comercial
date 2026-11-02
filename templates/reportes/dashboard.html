@@ -1,78 +1,257 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h2 class="mb-4">Dashboard</h2>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-success shadow-sm">
-            <div class="card-body">
-                <h6 class="card-title">Ventas de hoy</h6>
-                <h3>${{ total_ventas_hoy }}</h3>
-                <small>{{ cantidad_ventas_hoy }} venta(s)</small>
-            </div>
-        </div>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <h2 class="mb-0">Dashboard</h2>
+        <small class="text-muted">Del {{ desde_txt }} al {{ hasta_txt }} · comparado con el período anterior de igual duración</small>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-primary shadow-sm">
-            <div class="card-body">
-                <h6 class="card-title">Ventas del mes</h6>
-                <h3>${{ total_ventas_mes }}</h3>
-                <small>{{ cantidad_ventas_mes }} venta(s)</small>
-            </div>
+    <a href="{% url 'reportes:exportar_ventas' %}?{{ querystring }}" class="btn btn-success">
+        ⬇ Exportar ventas a Excel
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex flex-wrap align-items-end gap-3">
+        <div class="btn-group" role="group">
+            <a href="?rango=hoy" class="btn btn-sm {% if rango == 'hoy' %}btn-success{% else %}btn-outline-success{% endif %}">Hoy</a>
+            <a href="?rango=7d" class="btn btn-sm {% if rango == '7d' %}btn-success{% else %}btn-outline-success{% endif %}">7 días</a>
+            <a href="?rango=30d" class="btn btn-sm {% if rango == '30d' %}btn-success{% else %}btn-outline-success{% endif %}">30 días</a>
+            <a href="?rango=mes" class="btn btn-sm {% if rango == 'mes' %}btn-success{% else %}btn-outline-success{% endif %}">Este mes</a>
+            <a href="?rango=anio" class="btn btn-sm {% if rango == 'anio' %}btn-success{% else %}btn-outline-success{% endif %}">Este año</a>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info shadow-sm">
-            <div class="card-body">
-                <h6 class="card-title">Clientes registrados</h6>
-                <h3>{{ total_clientes }}</h3>
+        <form method="get" class="d-flex align-items-end gap-2">
+            <div>
+                <label class="form-label small mb-0">Desde</label>
+                <input type="date" name="desde" value="{{ desde }}" class="form-control form-control-sm" required>
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-secondary shadow-sm">
-            <div class="card-body">
-                <h6 class="card-title">Productos activos</h6>
-                <h3>{{ total_productos }}</h3>
+            <div>
+                <label class="form-label small mb-0">Hasta</label>
+                <input type="date" name="hasta" value="{{ hasta }}" class="form-control form-control-sm" required>
             </div>
-        </div>
+            <button type="submit" class="btn btn-sm {% if rango == 'personalizado' %}btn-success{% else %}btn-outline-success{% endif %}">Aplicar</button>
+        </form>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header fw-bold">Productos más vendidos</div>
-            <ul class="list-group list-group-flush">
-                {% for p in top_productos %}
-                    <li class="list-group-item d-flex justify-content-between">
-                        {{ p.nombre }} <span class="badge bg-success">{{ p.total_vendido }} unid.</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-center">Aún no hay ventas registradas.</li>
-                {% endfor %}
-            </ul>
+<div class="row g-3 mb-4">
+    {% for k in kpis %}
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">{{ k.titulo }}</small>
+                <h3 class="mb-1">{{ k.valor }}</h3>
+                {% if k.var is not None %}
+                    <span class="badge {% if k.var >= 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                        {% if k.var >= 0 %}▲{% else %}▼{% endif %} {{ k.var }}%
+                    </span>
+                    <small class="text-muted">vs. anterior</small>
+                {% else %}
+                    <small class="text-muted">Sin datos del período anterior</small>
+                {% endif %}
+            </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header fw-bold">⚠️ Alertas de inventario</div>
+    {% endfor %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm"><div class="card-body py-3">
+            <small class="text-muted">Clientes nuevos (período)</small>
+            <h4 class="mb-0">{{ clientes_nuevos }}</h4>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <a href="{% url 'pedidos:lista' %}" class="text-decoration-none">
+        <div class="card border-0 shadow-sm"><div class="card-body py-3">
+            <small class="text-muted">Pedidos por confirmar</small>
+            <h4 class="mb-0 {% if pedidos_pendientes %}text-warning{% endif %}">{{ pedidos_pendientes }}</h4>
+        </div></div>
+        </a>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm"><div class="card-body py-3">
+            <small class="text-muted">Productos con stock bajo o agotado</small>
+            <h4 class="mb-0 {% if alertas_stock %}text-danger{% endif %}">{{ alertas_stock|length }}</h4>
+        </div></div>
+    </div>
+</div>
+
+{% if hay_ventas %}
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">Ventas por día</h6>
+            <div style="height: 300px;"><canvas id="chVentasDia"></canvas></div>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">Ventas por categoría</h6>
+            <div style="height: 300px;"><canvas id="chCategorias"></canvas></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">Productos con más ingresos</h6>
+            <div style="height: 320px;"><canvas id="chTop"></canvas></div>
+        </div></div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">¿Qué día de la semana vendes más?</h6>
+            <div style="height: 320px;"><canvas id="chSemana"></canvas></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">Métodos de pago</h6>
+            <div style="height: 240px;"><canvas id="chPagos"></canvas></div>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">Mejores clientes</h6>
+            <ul class="list-group list-group-flush">
+                {% for c in top_clientes %}
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>{{ c.nombre }} <small class="text-muted">({{ c.compras }} compra{{ c.compras|pluralize }})</small></span>
+                    <strong>{{ c.total }}</strong>
+                </li>
+                {% endfor %}
+            </ul>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <h6 class="mb-3">⚠️ Alertas de inventario</h6>
             <ul class="list-group list-group-flush">
                 {% for inv in alertas_stock %}
-                    <li class="list-group-item d-flex justify-content-between">
-                        {{ inv.producto.nombre }}
-                        {% if inv.estado_stock == 'AGOTADO' %}
-                            <span class="badge bg-danger">Agotado</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark">Stock bajo ({{ inv.stock_actual }})</span>
-                        {% endif %}
-                    </li>
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    {{ inv.producto.nombre }}
+                    {% if inv.estado_stock == 'AGOTADO' %}
+                        <span class="badge bg-danger">Agotado</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Quedan {{ inv.stock_actual }}</span>
+                    {% endif %}
+                </li>
                 {% empty %}
-                    <li class="list-group-item text-center">Todo el inventario está en niveles normales ✅</li>
+                <li class="list-group-item px-0 text-muted">Todo el inventario está en niveles normales ✅</li>
                 {% endfor %}
             </ul>
+        </div></div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-5">
+    <div class="card-body">
+        <h6 class="mb-3">Últimas ventas del período</h6>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Vendedor</th><th>Pago</th><th class="text-end">Total</th></tr></thead>
+                <tbody>
+                {% for v in ultimas %}
+                    <tr>
+                        <td>{{ v.id }}</td><td>{{ v.fecha }}</td><td>{{ v.cliente }}</td>
+                        <td>{{ v.vendedor }}</td><td>{{ v.metodo }}</td>
+                        <td class="text-end fw-semibold">{{ v.total }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+{{ datos|json_script:"dash-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const D = JSON.parse(document.getElementById('dash-data').textContent);
+const PALETA = ['#23402C', '#C68A3D', '#6E8F72', '#A8702C', '#9DB8A0', '#E0B872', '#3F6B4F', '#CFC8B0'];
+const cop = n => '$' + Math.round(n).toLocaleString('es-CO');
+
+Chart.defaults.font.family = "'Work Sans', system-ui, sans-serif";
+Chart.defaults.color = '#5B5F53';
+
+const baseOpts = { responsive: true, maintainAspectRatio: false };
+const ejeCOP = { beginAtZero: true, ticks: { callback: v => cop(v) } };
+
+new Chart(document.getElementById('chVentasDia'), {
+    type: 'line',
+    data: { labels: D.dias.labels, datasets: [{
+        label: 'Ventas', data: D.dias.total, borderColor: '#23402C',
+        backgroundColor: 'rgba(35,64,44,.10)', fill: true, tension: .3,
+        pointRadius: D.dias.labels.length > 40 ? 0 : 3,
+    }]},
+    options: { ...baseOpts,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => cop(c.parsed.y) } } },
+        scales: { y: ejeCOP } },
+});
+
+new Chart(document.getElementById('chCategorias'), {
+    type: 'doughnut',
+    data: { labels: D.categorias.labels, datasets: [{ data: D.categorias.total, backgroundColor: PALETA }] },
+    options: { ...baseOpts, plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + cop(c.parsed) } } } },
+});
+
+new Chart(document.getElementById('chTop'), {
+    type: 'bar',
+    data: { labels: D.top.labels, datasets: [{ label: 'Ingresos', data: D.top.ingresos, backgroundColor: '#23402C', borderRadius: 6 }] },
+    options: { ...baseOpts, indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: { callbacks: {
+            label: c => cop(c.parsed.x) + ' · ' + D.top.unidades[c.dataIndex] + ' unid.' } } },
+        scales: { x: ejeCOP } },
+});
+
+new Chart(document.getElementById('chSemana'), {
+    type: 'bar',
+    data: { labels: D.semana.labels, datasets: [{ label: 'Ventas', data: D.semana.total, backgroundColor: '#C68A3D', borderRadius: 6 }] },
+    options: { ...baseOpts,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => cop(c.parsed.y) } } },
+        scales: { y: ejeCOP } },
+});
+
+new Chart(document.getElementById('chPagos'), {
+    type: 'doughnut',
+    data: { labels: D.pagos.labels, datasets: [{ data: D.pagos.total, backgroundColor: PALETA }] },
+    options: { ...baseOpts, plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + cop(c.parsed) } } } },
+});
+</script>
+
+{% else %}
+<div class="alert alert-light border text-center py-5">
+    <h5>No hay ventas registradas en este período 🌿</h5>
+    <p class="text-muted mb-0">Prueba con otro rango de fechas. Recuerda que una venta se registra cuando confirmas el pago de un pedido.</p>
+</div>
+{% if alertas_stock %}
+<div class="card border-0 shadow-sm mb-5"><div class="card-body">
+    <h6 class="mb-3">⚠️ Alertas de inventario</h6>
+    <ul class="list-group list-group-flush">
+        {% for inv in alertas_stock %}
+        <li class="list-group-item d-flex justify-content-between px-0">
+            {{ inv.producto.nombre }}
+            {% if inv.estado_stock == 'AGOTADO' %}<span class="badge bg-danger">Agotado</span>
+            {% else %}<span class="badge bg-warning text-dark">Quedan {{ inv.stock_actual }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div></div>
+{% endif %}
+{% endif %}
+
 {% endblock %}
+
+

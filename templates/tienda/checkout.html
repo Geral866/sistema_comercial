@@ -1,51 +1,75 @@
 {% extends 'base_publica.html' %}
 {% block title %}Finalizar compra{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-md-5 order-md-2 mb-4">
-        <h5>Resumen de tu pedido</h5>
-        <ul class="list-group mb-3">
-        {% for item in items %}
-            <li class="list-group-item d-flex justify-content-between">
-                {{ item.cantidad }} x {{ item.producto.nombre }}
-                <span>${{ item.subtotal }}</span>
+<h2 class="font-serif text-3xl font-bold text-primary mb-6">Finalizar compra</h2>
+
+{% if errores %}
+<div class="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 mb-6" role="alert">
+    <p class="font-semibold mb-1">Revisa estos datos:</p>
+    <ul class="list-disc ml-5 text-sm">
+        {% for e in errores %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="grid md:grid-cols-5 gap-8">
+    <form method="post" class="md:col-span-3 bg-white rounded-2xl shadow-soft p-6 space-y-4">
+        {% csrf_token %}
+        <h3 class="font-serif text-xl font-bold text-primary">Datos de envío</h3>
+
+        <div>
+            <label for="nombre" class="block text-sm font-semibold mb-1">Nombre completo *</label>
+            <input id="nombre" type="text" name="nombre" value="{{ datos.nombre }}" required maxlength="150" autocomplete="name"
+                   class="w-full border border-surface-container rounded-xl px-4 py-2.5 focus:border-accent outline-none">
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+                <label for="documento" class="block text-sm font-semibold mb-1">Número de cédula *</label>
+                <input id="documento" type="text" name="documento" value="{{ datos.documento }}" required inputmode="numeric" maxlength="20"
+                       class="w-full border border-surface-container rounded-xl px-4 py-2.5 focus:border-accent outline-none">
+            </div>
+            <div>
+                <label for="telefono" class="block text-sm font-semibold mb-1">Celular / WhatsApp *</label>
+                <input id="telefono" type="tel" name="telefono" value="{{ datos.telefono }}" required inputmode="tel" maxlength="20" autocomplete="tel"
+                       placeholder="3001234567"
+                       class="w-full border border-surface-container rounded-xl px-4 py-2.5 focus:border-accent outline-none">
+            </div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+                <label for="ciudad" class="block text-sm font-semibold mb-1">Ciudad *</label>
+                <input id="ciudad" type="text" name="ciudad" value="{{ datos.ciudad }}" required maxlength="100"
+                       class="w-full border border-surface-container rounded-xl px-4 py-2.5 focus:border-accent outline-none">
+            </div>
+            <div>
+                <label for="direccion" class="block text-sm font-semibold mb-1">Dirección de entrega *</label>
+                <input id="direccion" type="text" name="direccion" value="{{ datos.direccion }}" required maxlength="200" autocomplete="street-address"
+                       class="w-full border border-surface-container rounded-xl px-4 py-2.5 focus:border-accent outline-none">
+            </div>
+        </div>
+        <div>
+            <label for="notas" class="block text-sm font-semibold mb-1">Notas adicionales (opcional)</label>
+            <textarea id="notas" name="notas" rows="2" maxlength="500"
+                      class="w-full border border-surface-container rounded-xl px-4 py-2.5 focus:border-accent outline-none">{{ datos.notas }}</textarea>
+        </div>
+        <button type="submit" class="w-full bg-accent hover:bg-accent-dark text-white font-bold py-3.5 rounded-full">Confirmar pedido</button>
+    </form>
+
+    <div class="md:col-span-2 bg-white rounded-2xl shadow-soft p-6 h-fit">
+        <h3 class="font-serif text-xl font-bold text-primary mb-4">Resumen de tu pedido</h3>
+        <ul class="space-y-2 mb-4">
+            {% for item in items %}
+            <li class="flex justify-between text-sm">
+                <span>{{ item.cantidad }} x {{ item.nombre }}</span>
+                <span class="font-semibold">${{ item.subtotal|floatformat:0 }}</span>
             </li>
-        {% endfor %}
-            <li class="list-group-item d-flex justify-content-between fw-bold">
-                Total <span>${{ total }}</span>
-            </li>
+            {% endfor %}
         </ul>
-    </div>
-    <div class="col-md-7 order-md-1">
-        <h5>Datos de envío</h5>
-        <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label">Nombre completo *</label>
-                <input type="text" name="nombre" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Número de cédula *</label>
-                <input type="text" name="documento" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Teléfono / WhatsApp *</label>
-                <input type="text" name="telefono" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Ciudad *</label>
-                <input type="text" name="ciudad" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Dirección de entrega *</label>
-                <input type="text" name="direccion" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Notas adicionales (opcional)</label>
-                <textarea name="notas" class="form-control" rows="2"></textarea>
-            </div>
-            <button type="submit" class="btn btn-success btn-lg w-100">Confirmar pedido</button>
-        </form>
+        <div class="flex justify-between font-bold text-primary text-lg border-t border-surface-container pt-3">
+            <span>Total</span><span>${{ total|floatformat:0 }}</span>
+        </div>
+        <p class="text-xs text-ink-muted mt-3">El envío y la forma de pago se coordinan por WhatsApp al confirmar.</p>
     </div>
 </div>
 {% endblock %}
+

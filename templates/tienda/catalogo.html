@@ -1,33 +1,92 @@
 {% extends 'base_publica.html' %}
 {% block content %}
-<div class="row">
-    <div class="col-md-3">
-        <h5>Categorías</h5>
-        <div class="list-group mb-4">
-            <a href="{% url 'tienda:catalogo' %}" class="list-group-item list-group-item-action {% if not categoria_activa %}active{% endif %}">Todas</a>
-            {% for cat in categorias %}
-                <a href="{% url 'tienda:catalogo' %}?categoria={{ cat.id }}" class="list-group-item list-group-item-action {% if categoria_activa == cat.id %}active{% endif %}">{{ cat.nombre }}</a>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="col-md-9">
-        <h3 class="mb-3">Catálogo</h3>
-        <div class="row">
-        {% for p in productos %}
-            <div class="col-md-4 mb-3">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ p.nombre }}</h5>
-                        <p class="text-muted small">{{ p.categoria.nombre }}</p>
-                        <p class="fw-bold">${{ p.precio }}</p>
-                        <a href="{% url 'tienda:detalle_producto' p.pk %}" class="btn btn-success btn-sm">Ver producto</a>
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <p class="text-center">No hay productos en esta categoría.</p>
-        {% endfor %}
-        </div>
-    </div>
+<h2 class="font-serif text-3xl font-bold text-primary mb-6">Catálogo</h2>
+
+<input type="text" id="buscador" placeholder="Buscar productos, ej: colágeno..." class="w-full mb-4 px-4 py-3 rounded-full border border-surface-container focus:border-accent outline-none">
+
+<div class="flex flex-wrap gap-2 mb-4" id="chips">
+    <button class="chip active px-4 py-2 rounded-full text-sm font-semibold bg-primary text-white" data-cat="">Todas</button>
+    {% for cat in categorias %}
+        <button class="chip px-4 py-2 rounded-full text-sm font-semibold bg-white border border-surface-container text-ink-muted" data-cat="{{ cat.id }}">{{ cat.nombre }}</button>
+    {% endfor %}
 </div>
+
+<div class="flex justify-end mb-6">
+    <select id="orden" class="border border-surface-container rounded-full px-4 py-2 text-sm">
+        <option value="nombre_asc">Nombre A-Z</option>
+        <option value="nombre_desc">Nombre Z-A</option>
+        <option value="precio_asc">Precio: menor a mayor</option>
+        <option value="precio_desc">Precio: mayor a menor</option>
+    </select>
+</div>
+
+<div id="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+<p id="sinResultados" class="hidden text-center py-16 text-ink-muted">No encontramos productos con esa búsqueda 🌿</p>
+
+{{ productos_json|json_script:"productos-data" }}
 {% endblock %}
+
+{% block extra_js %}
+<script>
+const PRODUCTOS = JSON.parse(document.getElementById('productos-data').textContent);
+let categoriaActiva = "";
+let ordenActivo = "nombre_asc";
+let busqueda = "";
+
+function renderGrid() {
+    let lista = PRODUCTOS.filter(p => {
+        if (categoriaActiva && String(p.categoria_id) !== categoriaActiva) return false;
+        if (busqueda) {
+            const q = busqueda.toLowerCase();
+            return p.nombre.toLowerCase().includes(q) || p.descripcion.toLowerCase().includes(q) || p.categoria.toLowerCase().includes(q);
+        }
+        return true;
+    });
+
+    if (ordenActivo === 'precio_asc') lista.sort((a,b) => a.precio - b.precio);
+    else if (ordenActivo === 'precio_desc') lista.sort((a,b) => b.precio - a.precio);
+    else if (ordenActivo === 'nombre_desc') lista.sort((a,b) => b.nombre.localeCompare(a.nombre));
+    else lista.sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+    const grid = document.getElementById('grid');
+    const sinResultados = document.getElementById('sinResultados');
+
+    if (lista.length === 0) {
+        grid.innerHTML = '';
+        sinResultados.classList.remove('hidden');
+        return;
+    }
+    sinResultados.classList.add('hidden');
+
+    grid.innerHTML = lista.map(p => `
+        <div class="bg-white rounded-2xl shadow-soft hover:shadow-hover transition p-3 flex flex-col">
+            <div class="bg-mint-light rounded-xl h-40 flex items-center justify-center p-3 mb-3">
+                ${p.imagen ? `<img src="${p.imagen}" class="max-h-full max-w-full object-contain">` : '<span class="text-4xl">🌿</span>'}
+            </div>
+            <span class="text-xs text-secondary font-semibold">${p.categoria}</span>
+            <h5 class="font-semibold text-sm text-primary mb-1">${p.nombre}</h5>
+            <p class="font-bold text-accent-dark mb-3">${formatCOP(p.precio)}</p>
+            <div class="grid grid-cols-2 gap-2 mt-auto">
+                <a href="/producto/${p.id}/" class="text-center border border-surface-container py-2 rounded-lg text-xs font-semibold">Ver</a>
+                <button onclick="agregarAlCarrito(${p.id})" class="bg-primary text-white py-2 rounded-lg text-xs font-semibold">Agregar</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function () {
+        document.querySelectorAll('.chip').forEach(c => c.className = 'chip px-4 py-2 rounded-full text-sm font-semibold bg-white border border-surface-container text-ink-muted');
+        this.className = 'chip active px-4 py-2 rounded-full text-sm font-semibold bg-primary text-white';
+        categoriaActiva = this.dataset.cat;
+        renderGrid();
+    });
+});
+document.getElementById('orden').addEventListener('change', function () { ordenActivo = this.value; renderGrid(); });
+document.getElementById('buscador').addEventListener('input', function () { busqueda = this.value; renderGrid(); });
+
+renderGrid();
+</script>
+{% endblock %}
+
+
